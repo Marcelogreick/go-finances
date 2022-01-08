@@ -11,34 +11,31 @@ import {
   Title,
 } from "./styles";
 
-interface CategoryProps {
-  name: string;
-  icon: string;
-}
-
 export interface TransactionCardProps {
   name: string;
   amount: string;
-  category: CategoryProps;
+  category: string;
   date: string;
-  type: "positive" | "negative";
+  type: "up" | "down";
 }
-interface Props {
+interface ITransactionCardProps {
   data: TransactionCardProps;
 }
-export function TransactionCard({data}: Props): JSX.Element {
-  // const [category] = categories.filter((item) => item.key === data.category);
+export function TransactionCard({data}: ITransactionCardProps) {
+  const category = categories.filter(item => item.key === data.category)[0];
+
+  console.log(data.type, 'oi')
   return (
     <Container>
      <Title>{data.name}</Title>
       <Amount type={data.type}>
-        {data.type === "negative" && "- "}
+        {data.type === "down" && "- "}
         {data.amount}
       </Amount>
       <Footer>
         <Category>
-          <Icon name={data.category.icon} />
-          <CategoryName>{data.category.name}</CategoryName>
+          <Icon name={category.icon} />
+          <CategoryName>{category.name}</CategoryName>
         </Category>
         <Date>{data.date}</Date>
       </Footer>

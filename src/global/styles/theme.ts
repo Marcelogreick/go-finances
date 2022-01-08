@@ -1,4 +1,3 @@
-
 export default {
   colors: {
     primary: '#5636d3',
