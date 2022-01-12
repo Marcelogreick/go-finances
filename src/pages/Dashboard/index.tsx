@@ -30,6 +30,7 @@ export interface DataListProps extends TransactionCardProps {
 }
 interface HighlightProps {
   amount: string;
+  lastTransaction: string;
 }
 
 interface HighlightData {
@@ -45,6 +46,30 @@ export function Dashboard() {
     {} as HighlightData
   );
   const theme = useTheme();
+
+  function getLastTransactionDate(
+    collection: DataListProps[],
+    type: "up" | "down"
+  ) {
+    const collectionFiltered = collection.filter(
+      (transaction) => transaction.type === type
+    );
+    if (collectionFiltered.length == 0) return 0;
+    const lastTransaction = new Date(
+      Math.max.apply(
+        Math,
+        collectionFiltered.map((transaction) =>
+          new Date(transaction.date).getTime()
+        )
+      )
+    );
+    return `${lastTransaction.getDate()} de ${lastTransaction.toLocaleString(
+      "pt-BR",
+      {
+        month: "long",
+      }
+    )}`;
+  }
 
   async function loadTransactions() {
     const dataKey = '@gofinances:transactions';
@@ -88,32 +113,50 @@ export function Dashboard() {
 
     setTransactions(transactionsFormated);
 
-    const total = entriesTotal - expensiveTotal
+    const lastTransactionsEntries = getLastTransactionDate(
+      transactions,
+      "up"
+    );
+    const lastTransactionsExpensives = getLastTransactionDate(
+      transactions,
+      "down"
+    );
+    const totalInverval =
+      lastTransactionsExpensives === 0
+        ? "Não há transações."
+        : `01 a ${lastTransactionsExpensives}`;
+
+    const total = entriesTotal - expensiveTotal;
 
     setHighlightData({
       entries: {
-        amount: entriesTotal
-          .toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-          })
+        amount: entriesTotal.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        lastTransaction:
+          lastTransactionsEntries === 0
+            ? "Nao há transações."
+            : `Última entrada dia ${lastTransactionsEntries}`,
       },
       expensives: {
-        amount: expensiveTotal
-          .toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-          })
+        amount: expensiveTotal.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        lastTransaction:
+          lastTransactionsExpensives === 0
+            ? "Não há transações."
+            : `Última saída dia ${lastTransactionsExpensives}`,
       },
       total: {
-        amount: total
-          .toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-          }),
-      }
+        amount: total.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+        lastTransaction: totalInverval,
+      },
     });
-
     setIsLoading(false);
   }
 
@@ -129,12 +172,12 @@ export function Dashboard() {
   return (
     <Container>
       {isLoading ?
-      <LoadContainer>
-        <ActivityIndicator
-          color={theme.colors.primary}
-          size="large"
-        />
-      </LoadContainer> :
+        <LoadContainer>
+          <ActivityIndicator
+            color={theme.colors.primary}
+            size="large"
+          />
+        </LoadContainer> :
         <>
           <Header>
             <UserWrapper>
