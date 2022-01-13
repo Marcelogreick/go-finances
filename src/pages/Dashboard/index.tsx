@@ -8,6 +8,8 @@ import { HighlightCard } from '../../components/HighlightCard';
 import { TransactionCard, TransactionCardProps } from '../../components/TransactionCard';
 import { useTheme } from 'styled-components';
 
+import { useAuth } from '../../hooks/auth';
+
 import {
   Container,
   Header,
@@ -45,6 +47,9 @@ export function Dashboard() {
   const [highlightData, setHighlightData] = useState<HighlightData>(
     {} as HighlightData
   );
+
+  const { user, signOut } = useAuth();
+
   const theme = useTheme();
 
   function getLastTransactionDate(
@@ -72,7 +77,7 @@ export function Dashboard() {
   }
 
   async function loadTransactions() {
-    const dataKey = '@gofinances:transactions';
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
@@ -182,14 +187,14 @@ export function Dashboard() {
           <Header>
             <UserWrapper>
               <UserInfo>
-                <Photo source={{ uri: 'https://avatars.githubusercontent.com/u/47429405?v=4' }} />
+                <Photo source={{ uri: user.photo }} />
                 <User>
                   <UserGreeting>Olá,</UserGreeting>
-                  <UserName>Marcelo Greick</UserName>
+                  <UserName>{user.name}</UserName>
                 </User>
               </UserInfo>
 
-              <LogoutButton onPress={() => { }}>
+              <LogoutButton onPress={signOut}>
                 <Icon name="power" />
               </LogoutButton>
             </UserWrapper>
@@ -199,21 +204,21 @@ export function Dashboard() {
             <HighlightCard
               title="Entradas"
               amount={highlightData?.entries?.amount}
-              lastTransaction="Última entrada dia 13 de abril."
+              lastTransaction={highlightData.entries.lastTransaction}
               type="up"
             />
 
             <HighlightCard
               title="Saídas"
               amount={highlightData?.expensives?.amount}
-              lastTransaction="Última entrada dia 13 de abril."
+              lastTransaction={highlightData.expensives.lastTransaction}
               type="down"
             />
 
             <HighlightCard
               title="Total"
               amount={highlightData?.total?.amount}
-              lastTransaction="Última entrada dia 13 de abril."
+              lastTransaction={highlightData.total.lastTransaction}
               type="total"
             />
           </HighLightCards>
